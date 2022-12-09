@@ -2,7 +2,7 @@
 
 
 create_nhd_HR_download_plan <- function(states, min_size, d_tolerance, remove_IDs = NULL, keep_IDs = NULL){
-  base_url <- 'ftp://rockyftp.cr.usgs.gov/vdelivery/Datasets/Staged/Hydrography/NHD/State/HighResolution/GDB/NHD_H_%s_State_GDB.zip'
+  base_url <- 'https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/NHD/State/GDB/NHD_H_%s_State_GDB.zip'
 
   fetch_as_sf_step <- create_task_step(
     step_name = 'fetch_NHD_as_sf',
@@ -41,15 +41,20 @@ fetch_NHD_as_sf <- function(url,min_size, d_tol){
     unlink(unzip_dir, recursive = TRUE)
     unlink(dl_dest)
   })
-
+	
+  if(getOption('timeout') < 120){
+  	options(timeout = 120)
+  }
   download.file(url, destfile = dl_dest, quiet = TRUE, method='curl')
+  #GET(url, write_disk( dl_dest, overwrite=TRUE))
   unzip(dl_dest, exdir = unzip_dir)
 
   sf::read_sf(file.path(unzip_dir,paste0(tools::file_path_sans_ext(basename(url)), '.gdb')), layer = 'NHDWaterbody') %>%
-    filter(FType %in% c(390, 436, 361)) %>% #select only lakes/ponds/reservoirs. This drops things like swamp/marsh
-    mutate(area_m2 = AreaSqKm * 1000000) %>%
+  	filter(ftype %in% c(390, 436, 361)) %>% #select only lakes/ponds/reservoirs. This drops things like swamp/marsh
+    mutate(area_m2 = areasqkm * 1000000) %>%
     filter(area_m2 > min_size) %>%
-    mutate(site_id = paste0('nhdhr_', Permanent_Identifier)) %>% dplyr::select(site_id, GNIS_Name, Elevation, FType, FCode) %>%  #geometry selected automatically
+    mutate(site_id = paste0('nhdhr_', permanent_identifier)) %>%
+  	dplyr::select(site_id, gnis_name, elevation, ftype, fcode) %>%  #geometry selected automatically
     # bad Idaho site!
     filter(site_id != 'nhdhr_{5BEDE13F-C94B-4501-B979-E00C29EA374B}') %>%
     sf::st_transform(crs = 4326) %>%
