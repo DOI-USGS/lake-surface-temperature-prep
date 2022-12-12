@@ -46,7 +46,6 @@ fetch_NHD_as_sf <- function(url,min_size, d_tol){
   	options(timeout = 120)
   }
   download.file(url, destfile = dl_dest, quiet = TRUE, method='curl')
-  #GET(url, write_disk( dl_dest, overwrite=TRUE))
   unzip(dl_dest, exdir = unzip_dir)
 
   sf::read_sf(file.path(unzip_dir,paste0(tools::file_path_sans_ext(basename(url)), '.gdb')), layer = 'NHDWaterbody') %>%
