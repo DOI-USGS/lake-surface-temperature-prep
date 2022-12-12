@@ -69,7 +69,7 @@ GNIS_Name_xwalk <- function(ind_file, ...){
 
   sf_lakes <- rbind(...)
   deduped_sf_lakes <- st_drop_geometry(sf_lakes[!duplicated(sf_lakes$site_id), ]) %>%
-    dplyr::select(site_id, GNIS_Name)
+    dplyr::select(site_id, gnis_name)
 
   saveRDS(deduped_sf_lakes, data_file)
   gd_put(ind_file, data_file)
@@ -80,7 +80,7 @@ combine_nhd_sfs <- function(ind_file, ...){
 
   sf_lakes <- rbind(...)
   deduped_sf_lakes <- sf_lakes[!duplicated(sf_lakes$site_id), ] %>%
-    dplyr::select(site_id,  Elevation, FType, FCode)
+    dplyr::select(site_id,  elevation, ftype, fcode)
 
   saveRDS(deduped_sf_lakes, data_file)
   gd_put(ind_file, data_file)
