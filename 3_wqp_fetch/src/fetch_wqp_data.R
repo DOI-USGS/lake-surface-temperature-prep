@@ -145,15 +145,31 @@ pull_wqp_data <- function(data_file, wqp_sites, characteristicName, dummy){
     wqp_args$siteid <- pull(wqp_sites, MonitoringLocationIdentifier)
   }
 
-
   # do the data pull
   # first pull using readWQPdata, then if that fails, try POST
-  wqp_dat <- suppressMessages(wqp_POST(wqp_args))
-
-  if (wqp_sites$pull_org[1]){
-    wqp_dat <- filter(wqp_dat, MonitoringLocationIdentifier %in% wqp_sites$MonitoringLocationIdentifier)
+  #wqp_dat <- suppressMessages(wqp_POST(wqp_args))
+  pull_data <- function(x){
+  	retry::retry(dataRetrieval::readWQPdata(x),
+  							 when = "Error:", 
+  							 max_tries = max_tries)
   }
-  saveRDS(wqp_dat, data_file)
+  
+  wqp_data <- pull_data(wqp_args)
+  
+  if (wqp_sites$pull_org[1]){
+    wqp_data <- filter(wqp_data, MonitoringLocationIdentifier %in% wqp_sites$MonitoringLocationIdentifier)
+  }
+  
+  wqp_data <- wqp_data %>%
+  	mutate(across(c(`ActivityStartTime.Time`, `ActivityEndTime.Time`, USGSPCode, ResultCommentText,
+  									`ActivityEndTime.TimeZoneCode`),
+  								as.character),
+  				 across(c(`ActivityDepthHeightMeasure.MeasureValue`, `DetectionQuantitationLimitMeasure.MeasureValue`,
+  				 			 ResultMeasureValue,`ResultDepthHeightMeasure.MeasureValue`),
+  				 			 as.numeric)
+  				 )
+  								 
+  saveRDS(wqp_data, data_file)
 }
 
 

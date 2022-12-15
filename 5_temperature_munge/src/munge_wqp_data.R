@@ -25,26 +25,26 @@ munge_wqp_temperature <- function(outind, wqp_ind, wqp_crosswalk_ind){
                              stringsAsFactors = FALSE)
 
   activity.sites <- group_by(wqp_temp_data, OrganizationIdentifier) %>%
-    summarize(act.n = sum(!is.na(`ActivityDepthHeightMeasure/MeasureValue`)), res.n=sum(!is.na((`ResultDepthHeightMeasure/MeasureValue`)))) %>%
+    summarize(act.n = sum(!is.na(`ActivityDepthHeightMeasure.MeasureValue`)), res.n=sum(!is.na((`ResultDepthHeightMeasure.MeasureValue`)))) %>%
     mutate(use.depth.code = ifelse(act.n>res.n, 'act','res')) %>%
     dplyr::select(OrganizationIdentifier, use.depth.code)
 
   
   left_join(wqp_temp_data, activity.sites, by='OrganizationIdentifier') %>%
     mutate(raw.depth = case_when(
-      use.depth.code == 'act' ~ `ActivityDepthHeightMeasure/MeasureValue`,
-      use.depth.code == 'res' ~ as.numeric(`ResultDepthHeightMeasure/MeasureValue`) #as of 10/25/2019, the chars that will fail conversion are things like "Haugen Lake Littoral", "Burns Lake Littoral", "Littoral Zone Sample"
+      use.depth.code == 'act' ~ `ActivityDepthHeightMeasure.MeasureValue`,
+      use.depth.code == 'res' ~ `ResultDepthHeightMeasure.MeasureValue` #as of 10/25/2019, the chars that will fail conversion are things like "Haugen Lake Littoral", "Burns Lake Littoral", "Littoral Zone Sample"
     ),
     depth.units = case_when(
-      use.depth.code == 'act' ~ `ActivityDepthHeightMeasure/MeasureUnitCode`,
-      use.depth.code == 'res' ~ `ResultDepthHeightMeasure/MeasureUnitCode`
+      use.depth.code == 'act' ~ `ActivityDepthHeightMeasure.MeasureUnitCode`,
+      use.depth.code == 'res' ~ `ResultDepthHeightMeasure.MeasureUnitCode`
     )) %>%
     rename(Date = ActivityStartDate,
            raw_value = ResultMeasureValue,
-           units = `ResultMeasure/MeasureUnitCode`,
-           result_method = `ResultAnalyticalMethod/MethodIdentifier`,
-           timezone = `ActivityStartTime/TimeZoneCode`) %>%
-    mutate(time = substr(`ActivityStartTime/Time`, 0, 5)) %>%
+           units = `ResultMeasure.MeasureUnitCode`,
+           result_method = `ResultAnalyticalMethod.MethodIdentifier`,
+           timezone = `ActivityStartTime.TimeZoneCode`) %>%
+    mutate(time = substr(`ActivityStartTime.Time`, 0, 5)) %>%
   	# "Temp at lab-iced." "Temp. at lab" "Temperature at lab" clearly need to be removed 
     filter(!grepl(pattern="(Temp at lab|Temp. at lab|Temperature at lab)", ResultCommentText)) %>% 
     dplyr::select(Date, time, timezone, raw_value, units, raw.depth, depth.units, MonitoringLocationIdentifier, result_method, CharacteristicName) %>%
@@ -122,3 +122,5 @@ combine_temp_sources <- function(outind, wqp_daily_ind, superset_daily_ind, cell
 
   gd_put(outind, outfile)
 }
+
+	
