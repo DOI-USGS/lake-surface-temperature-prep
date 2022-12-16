@@ -12,11 +12,11 @@ create_metadata_file <- function(outfile, site_cell_indices, lakes_sf_ind, obs_i
   # add lat/lon
   lakes_sf %>% inner_join(site_cell_indices) %>%
     # observed: TRUE/FALSE
-    mutate(observed = site_id %in% obs_sites, area_m2 = st_area(Shape)) %>%
+    mutate(observed = site_id %in% obs_sites, area_m2 = st_area(SHAPE)) %>%
     # can't do coords on polygons, so convert to centroids
-    st_centroid() %>% mutate(lon = {st_coordinates(Shape)[,1]}, lat = {st_coordinates(Shape)[,2]}) %>%
+    st_centroid() %>% mutate(lon = {st_coordinates(SHAPE)[,1]}, lat = {st_coordinates(SHAPE)[,2]}) %>%
     st_drop_geometry() %>%
-    select(-Elevation, -FType, -FCode) %>%
+    select(-elevation, -ftype, -fcode) %>%
     inner_join(elevations, by = 'site_id') %>%
     write_csv(outfile)
   

@@ -14,6 +14,7 @@ targets:
       - 4_drivers_fetch/log/4_fetch_NLDAS_nc_dailies.ind
       - 5_temperature_munge/out/surface_lake_temp_daily.feather.ind
       - 2_crosswalk_munge/out/centroid_lakes_sf.rds.ind
+      - 3_wqp_fetch/out/wqp_temperature_data.rds.ind
       - surface_lake_metadata_file.csv
 
 
