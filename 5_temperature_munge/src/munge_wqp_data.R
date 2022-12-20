@@ -113,8 +113,8 @@ combine_temp_sources <- function(outind, wqp_daily_ind, superset_daily_ind, cell
   bind_rows(wqp_daily, new_data) %>% arrange(site_id) %>%
     filter(!site_id %in% remove_ids) %>%
     filter(site_id %in% cell_sites$site_id) %>%
-    filter(Date < as.Date('2021-01-01'), Date > as.Date('1979-12-31')) %>% 
-    group_by(Date, site_id) %>% 
+    filter(Date < as.Date(Sys.Date()), Date > as.Date('1979-12-31')) %>%
+  	group_by(Date, site_id) %>% 
     summarise(wtemp = first(wtemp), source = first(source), 
               .groups = 'drop') %>% 
     write_feather(path = outfile)
